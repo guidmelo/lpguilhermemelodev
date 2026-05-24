@@ -1,58 +1,14 @@
 'use client'
 
 import { memo, useRef } from 'react'
-import { motion }         from 'framer-motion'
-import { Container }      from '@/components/layout/container'
-import { GradientLine }   from '@/components/effects/gradient-line'
-import { CompileTerminal } from './compile-terminal'
-
-/* ── Data ───────────────────────────────────────────────────────────────────── */
-
-interface Category {
-  label:  string
-  accent: string
-  col:    string
-  items:  readonly string[]
-}
-
-const CATEGORIES: readonly Category[] = [
-  {
-    label: 'Front-end Engineering', accent: '#FF6B00', col: 'lg:col-span-7',
-    items: ['HTML5', 'CSS3', 'JavaScript', 'TypeScript', 'React', 'Next.js', 'Vue.js', 'TailwindCSS', 'Shadcn UI'],
-  },
-  {
-    label: 'Back-end Architecture', accent: '#4F8EF7', col: 'lg:col-span-5',
-    items: ['Node.js', 'NestJS', 'Express', 'FastAPI', 'GraphQL', 'tRPC', 'gRPC', 'WebSockets', 'OpenAPI'],
-  },
-  {
-    label: 'Cloud & DevOps', accent: '#34D399', col: 'lg:col-span-5',
-    items: ['Docker', 'Kubernetes', 'Terraform', 'AWS', 'Vercel', 'GitHub Actions', 'Prometheus', 'Grafana'],
-  },
-  {
-    label: 'IA & Automações', accent: '#FF6B00', col: 'lg:col-span-7',
-    items: ['OpenAI API', 'LangChain', 'Pinecone', 'Hugging Face', 'AI Agents', 'Prompt Engineering'],
-  },
-  {
-    label: 'Banco de Dados', accent: '#818CF8', col: 'lg:col-span-4',
-    items: ['PostgreSQL', 'MongoDB', 'Prisma', 'Redis', 'Firebase', 'Supabase'],
-  },
-  {
-    label: 'Mobile Development', accent: '#F472B6', col: 'lg:col-span-4',
-    items: ['React Native', 'Expo', 'Flutter', 'Redux Toolkit', 'React Query'],
-  },
-  {
-    label: 'Performance & Escala', accent: '#34D399', col: 'lg:col-span-4',
-    items: ['Bun', 'Golang', 'Rust', 'WebAssembly', 'Kafka', 'RabbitMQ'],
-  },
-  {
-    label: 'Segurança', accent: '#FBBF24', col: 'lg:col-span-6',
-    items: ['OAuth 2.0', 'OIDC', 'JWT', 'Cloudflare Workers', 'Sentry', 'HTTPS/TLS'],
-  },
-  {
-    label: 'Qualidade & Testes', accent: '#A78BFA', col: 'lg:col-span-6',
-    items: ['Jest', 'Playwright', 'Cypress', 'SonarQube', 'ESLint', 'Prettier'],
-  },
-] as const
+import { motion }            from 'framer-motion'
+import * as Tooltip          from '@radix-ui/react-tooltip'
+import { Container }         from '@/components/layout/container'
+import { GradientLine }      from '@/components/effects/gradient-line'
+import { CompileTerminal }   from './compile-terminal'
+import { TechBadge }         from '@/components/tech/tech-badge'
+import { TECH_CATEGORIES }   from '@/data/tech-stack'
+import type { TechCategoryGroup } from '@/data/tech-stack'
 
 /* ── Motion variants (module-level — no recreation on render) ───────────────── */
 
@@ -61,33 +17,15 @@ const badgeContainer = {
   visible: { transition: { staggerChildren: 0.04, delayChildren: 0.08 } },
 }
 
-const badgeItem = {
-  hidden:  { opacity: 0, scale: 0.85, filter: 'blur(3px)' },
-  visible: {
-    opacity: 1, scale: 1, filter: 'blur(0px)',
-    transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] as const },
-  },
-}
-
-/* ── Badge hover handlers (module-level — stable across renders) ────────────── */
-
-function onBadgeEnter(e: React.MouseEvent) {
-  const el = e.currentTarget as HTMLElement
-  el.style.background  = 'rgba(255,107,0,0.06)'
-  el.style.borderColor = 'rgba(255,107,0,0.18)'
-  el.style.color       = '#888'
-}
-
-function onBadgeLeave(e: React.MouseEvent) {
-  const el = e.currentTarget as HTMLElement
-  el.style.background  = 'rgba(255,255,255,0.025)'
-  el.style.borderColor = 'rgba(255,255,255,0.055)'
-  el.style.color       = '#383838'
-}
-
 /* ── CategoryCard ─────────────────────────────────────────────────────────────── */
 
-const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: Category; index: number }) {
+const CategoryCard = memo(function CategoryCard({
+  cat,
+  index,
+}: {
+  cat:   TechCategoryGroup
+  index: number
+}) {
   const spotRef = useRef<HTMLDivElement>(null)
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -108,12 +46,12 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: Category;
     <motion.div
       className={cat.col}
       style={{
-        position:      'relative',
-        background:    'rgba(4,4,4,0.96)',
-        border:        '1px solid rgba(255,255,255,0.055)',
-        borderRadius:  '12px',
-        padding:       '18px 20px',
-        overflow:      'hidden',
+        position:     'relative',
+        background:   'rgba(4,4,4,0.96)',
+        border:       '1px solid rgba(255,255,255,0.055)',
+        borderRadius: '12px',
+        padding:      '18px 20px',
+        overflow:     'hidden',
       }}
       initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
       whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -126,14 +64,46 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: Category;
       <div
         ref={spotRef}
         aria-hidden
-        style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0, transition: 'opacity 0.15s ease', zIndex: 0, borderRadius: '12px' }}
+        style={{
+          position:     'absolute',
+          inset:        0,
+          pointerEvents:'none',
+          opacity:      0,
+          transition:   'opacity 0.15s ease',
+          zIndex:       0,
+          borderRadius: '12px',
+        }}
       />
 
       {/* Category header */}
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+      <div
+        style={{
+          position:       'relative',
+          zIndex:         1,
+          display:        'flex',
+          alignItems:     'center',
+          justifyContent: 'space-between',
+          marginBottom:   '14px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: cat.accent, flexShrink: 0 }} />
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#282828', letterSpacing: '0.09em' }}>
+          <div
+            style={{
+              width:        '4px',
+              height:       '4px',
+              borderRadius: '50%',
+              background:   cat.accent,
+              flexShrink:   0,
+            }}
+          />
+          <span
+            style={{
+              fontFamily:    "'JetBrains Mono', monospace",
+              fontSize:      '9px',
+              color:         '#282828',
+              letterSpacing: '0.09em',
+            }}
+          >
             {cat.label.toUpperCase()}
           </span>
         </div>
@@ -160,33 +130,16 @@ const CategoryCard = memo(function CategoryCard({ cat, index }: { cat: Category;
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true as const, margin: '-40px' }}
-        style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', gap: '5px' }}
+        style={{
+          position:  'relative',
+          zIndex:    1,
+          display:   'flex',
+          flexWrap:  'wrap',
+          gap:       '5px',
+        }}
       >
-        {(cat.items as readonly string[]).map((tech) => (
-          <motion.span
-            key={tech}
-            variants={badgeItem}
-            onMouseEnter={onBadgeEnter}
-            onMouseLeave={onBadgeLeave}
-            style={{
-              display:       'inline-flex',
-              alignItems:    'center',
-              gap:           '5px',
-              fontFamily:    "'JetBrains Mono', monospace",
-              fontSize:      '10px',
-              color:         '#383838',
-              background:    'rgba(255,255,255,0.025)',
-              border:        '1px solid rgba(255,255,255,0.055)',
-              borderRadius:  '6px',
-              padding:       '4px 9px',
-              letterSpacing: '0.02em',
-              cursor:        'default',
-              transition:    'background 0.18s ease, border-color 0.18s ease, color 0.18s ease',
-            }}
-          >
-            <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: cat.accent, opacity: 0.5, flexShrink: 0 }} />
-            {tech}
-          </motion.span>
+        {cat.items.map((item) => (
+          <TechBadge key={item.name} item={item} accentColor={cat.accent} />
         ))}
       </motion.div>
     </motion.div>
@@ -206,94 +159,125 @@ const reveal = (delay: number) => ({
 
 export const TechStackSection = memo(function TechStackSection() {
   return (
-    <section
-      id="stack"
-      className="relative overflow-hidden"
-      style={{ paddingTop: '8rem', paddingBottom: '8rem' }}
-    >
-      {/* Top separator */}
-      <div className="absolute top-0 inset-x-0" style={{ zIndex: 6 }}>
-        <GradientLine orientation="horizontal" accentSide="center" />
-      </div>
+    <Tooltip.Provider>
+      <section
+        id="stack"
+        className="relative overflow-hidden"
+        style={{ paddingTop: '8rem', paddingBottom: '8rem' }}
+      >
+        {/* Top separator */}
+        <div className="absolute top-0 inset-x-0" style={{ zIndex: 6 }}>
+          <GradientLine orientation="horizontal" accentSide="center" />
+        </div>
 
-      {/* Ambient lighting */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          zIndex:     0,
-          background: [
-            'radial-gradient(ellipse 55% 45% at 50% 0%,  rgba(255,107,0,0.04)  0%, transparent 65%)',
-            'radial-gradient(ellipse 40% 40% at 0%  100%, rgba(79,142,247,0.025) 0%, transparent 65%)',
-          ].join(', '),
-        }}
-      />
+        {/* Ambient lighting */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            zIndex:     0,
+            background: [
+              'radial-gradient(ellipse 55% 45% at 50% 0%,   rgba(255,107,0,0.04)   0%, transparent 65%)',
+              'radial-gradient(ellipse 40% 40% at 0%  100%, rgba(79,142,247,0.025) 0%, transparent 65%)',
+            ].join(', '),
+          }}
+        />
 
-      {/* Grid texture */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          zIndex:          0,
-          backgroundImage: [
-            'linear-gradient(rgba(255,255,255,0.008) 1px, transparent 1px)',
-            'linear-gradient(90deg, rgba(255,255,255,0.008) 1px, transparent 1px)',
-          ].join(', '),
-          backgroundSize: '72px 72px',
-        }}
-      />
+        {/* Grid texture */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            zIndex:          0,
+            backgroundImage: [
+              'linear-gradient(rgba(255,255,255,0.008) 1px, transparent 1px)',
+              'linear-gradient(90deg, rgba(255,255,255,0.008) 1px, transparent 1px)',
+            ].join(', '),
+            backgroundSize: '72px 72px',
+          }}
+        />
 
-      <Container className="relative" style={{ zIndex: 10 } as React.CSSProperties}>
+        <Container className="relative" style={{ zIndex: 10 } as React.CSSProperties}>
 
-        {/* Header */}
-        <div className="mb-14 max-w-[640px]">
-          <motion.div {...reveal(0)} className="mb-6">
-            <div
-              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5"
-              style={{ background: 'rgba(255,107,0,0.06)', border: '1px solid rgba(255,107,0,0.18)' }}
+          {/* Header */}
+          <div className="mb-14 max-w-[640px]">
+            <motion.div {...reveal(0)} className="mb-6">
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5"
+                style={{ background: 'rgba(255,107,0,0.06)', border: '1px solid rgba(255,107,0,0.18)' }}
+              >
+                <span
+                  style={{
+                    width:        '5px',
+                    height:       '5px',
+                    borderRadius: '50%',
+                    background:   '#FF6B00',
+                    display:      'inline-block',
+                    flexShrink:   0,
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily:    "'JetBrains Mono', monospace",
+                    fontSize:      '10px',
+                    color:         '#FF6B00',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  TECH STACK // 9 CATEGORIAS · 60+ FERRAMENTAS
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.h2
+              style={{
+                fontFamily:    "'Clash Display', sans-serif",
+                fontSize:      'clamp(1.85rem, 3.8vw, 2.7rem)',
+                fontWeight:    700,
+                color:         '#F3F3F3',
+                letterSpacing: '-0.03em',
+                lineHeight:    1.1,
+                marginBottom:  '14px',
+              }}
+              {...reveal(0.1)}
             >
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#FF6B00', display: 'inline-block', flexShrink: 0 }} />
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', color: '#FF6B00', letterSpacing: '0.08em' }}>
-                TECH STACK // 9 CATEGORIAS · 60+ FERRAMENTAS
-              </span>
-            </div>
+              Tecnologias modernas para construir{' '}
+              <span style={{ color: '#FF6B00' }}>sistemas de alta performance.</span>
+            </motion.h2>
+
+            <motion.p
+              style={{
+                fontFamily: "'Satoshi', sans-serif",
+                fontSize:   '16px',
+                color:      '#484848',
+                lineHeight: 1.7,
+              }}
+              {...reveal(0.2)}
+            >
+              Stacks modernas, arquitetura escalável e ferramentas premium utilizadas
+              para criar experiências digitais sofisticadas.
+            </motion.p>
+          </div>
+
+          {/* Compile terminal */}
+          <motion.div className="mb-3" {...reveal(0.25)}>
+            <CompileTerminal />
           </motion.div>
 
-          <motion.h2
-            style={{ fontFamily: "'Clash Display', sans-serif", fontSize: 'clamp(1.85rem, 3.8vw, 2.7rem)', fontWeight: 700, color: '#F3F3F3', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '14px' }}
-            {...reveal(0.1)}
-          >
-            Tecnologias modernas para construir{' '}
-            <span style={{ color: '#FF6B00' }}>sistemas de alta performance.</span>
-          </motion.h2>
+          {/* Category grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3">
+            {TECH_CATEGORIES.map((cat, i) => (
+              <CategoryCard key={cat.label} cat={cat} index={i} />
+            ))}
+          </div>
 
-          <motion.p
-            style={{ fontFamily: "'Satoshi', sans-serif", fontSize: '16px', color: '#484848', lineHeight: 1.7 }}
-            {...reveal(0.2)}
-          >
-            Stacks modernas, arquitetura escalável e ferramentas premium utilizadas
-            para criar experiências digitais sofisticadas.
-          </motion.p>
+        </Container>
+
+        {/* Bottom separator */}
+        <div className="absolute bottom-0 inset-x-0" style={{ zIndex: 6 }}>
+          <GradientLine orientation="horizontal" accentSide="center" />
         </div>
-
-        {/* Compile terminal */}
-        <motion.div className="mb-3" {...reveal(0.25)}>
-          <CompileTerminal />
-        </motion.div>
-
-        {/* Category grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3">
-          {CATEGORIES.map((cat, i) => (
-            <CategoryCard key={cat.label} cat={cat as Category} index={i} />
-          ))}
-        </div>
-
-      </Container>
-
-      {/* Bottom separator */}
-      <div className="absolute bottom-0 inset-x-0" style={{ zIndex: 6 }}>
-        <GradientLine orientation="horizontal" accentSide="center" />
-      </div>
-    </section>
+      </section>
+    </Tooltip.Provider>
   )
 })
