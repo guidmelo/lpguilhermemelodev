@@ -291,6 +291,22 @@ body {
   mix-blend-mode: overlay;
 }
 
+/* ── Custom Cursor ───────────────────────────────────────────────────────── */
+html.custom-cursor,
+html.custom-cursor * {
+  cursor: none !important;
+}
+
+/* ── Reduced Motion Safety ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:       0.01ms !important;
+    animation-iteration-count: 1     !important;
+    transition-duration:      0.01ms !important;
+  }
+  html { scroll-behavior: auto !important; }
+}
+
 /* ── Utility: Animation Triggers ─────────────────────────────────────────── */
 @utility animate-fade-up   { animation: fade-up   0.65s var(--ease-expo) both; }
 @utility animate-fade-in   { animation: fade-in   0.55s var(--ease-expo) both; }

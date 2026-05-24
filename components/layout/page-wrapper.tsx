@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
-import { AmbientLight }  from '@/components/effects/ambient-light'
-import { NoiseOverlay }  from '@/components/effects/noise-overlay'
-import { AnimatedGrid }  from '@/components/effects/animated-grid'
+import { AmbientLight }    from '@/components/effects/ambient-light'
+import { NoiseOverlay }    from '@/components/effects/noise-overlay'
+import { AnimatedGrid }    from '@/components/effects/animated-grid'
+import { MotionProvider }  from '@/components/layout/motion-provider'
 
 interface PageWrapperProps {
   children: ReactNode
@@ -35,9 +36,11 @@ export function PageWrapper({ children }: PageWrapperProps) {
         }}
       />
 
-      {/* Page content */}
+      {/* Page content + global motion layer (cursor) */}
       <div className="relative" style={{ zIndex: 10 }}>
-        {children}
+        <MotionProvider>
+          {children}
+        </MotionProvider>
       </div>
 
       {/* Film grain (top layer) */}
