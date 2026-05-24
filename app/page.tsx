@@ -6,6 +6,7 @@ import { ServicesSection }  from '@/components/sections/services-section'
 import { PortfolioSection }  from '@/components/sections/portfolio/portfolio-section'
 import { TechStackSection }  from '@/components/sections/tech/tech-stack-section'
 import { AISection }         from '@/components/sections/ai/ai-section'
+import { ResultsSection }    from '@/components/sections/results/results-section'
 import { Footer }            from '@/components/layout/footer'
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
       <PortfolioSection />
       <TechStackSection />
       <AISection />
+      <ResultsSection />
       <Footer />
     </PageWrapper>
   )
