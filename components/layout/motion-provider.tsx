@@ -1,7 +1,8 @@
 'use client'
 
 import { memo, type ReactNode } from 'react'
-import { SmoothCursor } from '@/components/effects/smooth-cursor'
+import { SmoothCursor }    from '@/components/effects/smooth-cursor'
+import { ScrollProgress }  from '@/components/effects/scroll-progress'
 
 interface MotionProviderProps {
   children: ReactNode
@@ -14,6 +15,7 @@ export const MotionProvider = memo(function MotionProvider({ children }: MotionP
   return (
     <>
       {children}
+      <ScrollProgress />
       <SmoothCursor />
     </>
   )

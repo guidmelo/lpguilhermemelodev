@@ -7,6 +7,7 @@ import { ArrowRight, Zap, Globe, BarChart3, Cpu, Layers, Network } from 'lucide-
 import { Container }        from '@/components/layout/container'
 import { Button }           from '@/components/ui/button'
 import { GradientLine }     from '@/components/effects/gradient-line'
+import { MagneticWrapper }  from '@/components/effects/magnetic-wrapper'
 import { AnimatedCodeBg }   from './hero/animated-code-bg'
 import { HeroImage }        from './hero/hero-image'
 import { HeadlineReveal }   from './hero/headline-reveal'
@@ -221,16 +222,20 @@ export const HeroSection = memo(function HeroSection() {
 
             {/* CTA buttons */}
             <motion.div {...fadeUp(0.66)} className="flex flex-wrap items-center gap-3">
-              <Button
-                variant="primary"
-                size="lg"
-                rightIcon={<ArrowRight size={15} />}
-              >
-                Solicitar diagnóstico estratégico
-              </Button>
-              <Button variant="secondary" size="lg">
-                Ver portfólio
-              </Button>
+              <MagneticWrapper strength={0.22}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  rightIcon={<ArrowRight size={15} />}
+                >
+                  Solicitar diagnóstico estratégico
+                </Button>
+              </MagneticWrapper>
+              <MagneticWrapper strength={0.18}>
+                <Button variant="secondary" size="lg">
+                  Ver portfólio
+                </Button>
+              </MagneticWrapper>
             </motion.div>
 
             {/* Service badges */}
