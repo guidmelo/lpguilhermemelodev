@@ -9,18 +9,26 @@ interface TechIconProps {
   glow?: string
 }
 
-export function TechIcon({ src, name, size = 14, glow }: TechIconProps) {
-  const [errored, setErrored] = useState(false)
+const FORMATS = ['.svg', '.png', '.webp'] as const
 
-  const initials = name
+function basePath(src: string) {
+  return src.replace(/\.[^./]+$/, '')
+}
+
+function initials(name: string) {
+  return name
     .split(/[\s./]/)
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0])
     .join('')
     .toUpperCase()
+}
 
-  if (errored) {
+export function TechIcon({ src, name, size = 14, glow }: TechIconProps) {
+  const [fmtIndex, setFmtIndex] = useState(0)
+
+  if (fmtIndex >= FORMATS.length) {
     return (
       <span
         aria-hidden
@@ -38,20 +46,20 @@ export function TechIcon({ src, name, size = 14, glow }: TechIconProps) {
           flexShrink:     0,
         }}
       >
-        {initials.slice(0, 2)}
+        {initials(name).slice(0, 2)}
       </span>
     )
   }
 
   return (
     <img
-      src={src}
+      src={basePath(src) + FORMATS[fmtIndex]}
       alt=""
       width={size}
       height={size}
       aria-hidden
       style={{ width: size, height: size, objectFit: 'contain', flexShrink: 0 }}
-      onError={() => setErrored(true)}
+      onError={() => setFmtIndex((i) => i + 1)}
     />
   )
 }
