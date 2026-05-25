@@ -157,6 +157,15 @@ body {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+/* 4× duplication rows: move exactly 1 copy width = −25% of total */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-25%); }
+}
+@keyframes marquee-right {
+  from { transform: translateX(-25%); }
+  to   { transform: translateX(0); }
+}
 @keyframes draw-line {
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }

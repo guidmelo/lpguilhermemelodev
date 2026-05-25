@@ -13,8 +13,8 @@ import { ServicesSection } from '@/components/sections/services-section'
 const PortfolioSection  = dynamic(() =>
   import('@/components/sections/portfolio/portfolio-section').then(m => ({ default: m.PortfolioSection }))
 )
-const TechStackSection  = dynamic(() =>
-  import('@/components/sections/tech/tech-stack-section').then(m => ({ default: m.TechStackSection }))
+const TechMarqueeSection = dynamic(() =>
+  import('@/components/sections/tech-marquee-section').then(m => ({ default: m.TechMarqueeSection }))
 )
 const AISection         = dynamic(() =>
   import('@/components/sections/ai/ai-section').then(m => ({ default: m.AISection }))
@@ -38,7 +38,7 @@ export default function Home() {
         <AboutSection />
         <ServicesSection />
         <PortfolioSection />
-        <TechStackSection />
+        <TechMarqueeSection />
         <AISection />
         <ResultsSection />
         <ContactSection />
