@@ -245,16 +245,15 @@ export const HeroSection = memo(function HeroSection() {
             <StatsStrip />
           </div>
 
-          {/* ── Right column: Photo ────────────────────────────────────── */}
+          {/* ── Right column: Figure — no box, bleeds into hero ambient ── */}
           <motion.div
-            className="order-1 lg:order-2 flex justify-center lg:justify-end"
+            className="order-1 lg:order-2"
+            style={{ overflow: 'visible' }}
             initial={{ opacity: 0, x: 30, filter: 'blur(8px)' }}
             animate={{ opacity: 1, x: 0,  filter: 'blur(0px)' }}
             transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="w-full">
-              <HeroImage />
-            </div>
+            <HeroImage />
           </motion.div>
         </div>
       </Container>
