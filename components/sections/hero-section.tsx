@@ -197,7 +197,7 @@ export const HeroSection = memo(function HeroSection() {
         className="relative"
         style={{ zIndex: 10, paddingTop: '7rem', paddingBottom: '6rem' } as React.CSSProperties}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_460px] gap-12 xl:gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px] gap-12 xl:gap-16 items-center">
 
           {/* ── Left column: Text ─────────────────────────────────────── */}
           <div className="flex flex-col gap-6 order-2 lg:order-1">
@@ -252,7 +252,7 @@ export const HeroSection = memo(function HeroSection() {
             animate={{ opacity: 1, x: 0,  filter: 'blur(0px)' }}
             transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="w-full max-w-[340px] sm:max-w-[380px] lg:max-w-full">
+            <div className="w-full">
               <HeroImage />
             </div>
           </motion.div>
