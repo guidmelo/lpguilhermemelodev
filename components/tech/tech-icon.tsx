@@ -1,51 +1,47 @@
 'use client'
 
 import { useMemo, useState, useEffect, useRef } from 'react'
+import { TECH_LOGO_MANIFEST } from '@/data/tech-logo-manifest'
 
 interface TechIconProps {
-  src:   string   // icon path from TechItem — extension is stripped internally
+  src:   string   // icon path from TechItem — e.g. /assets/tech/frontend/react.svg
   name:  string
   size?: number
   glow?: string
 }
 
-/* ── Format priority ────────────────────────────────────────────────────────── */
+/* ── Format priority (probe cascade fallback only) ──────────────────────────── */
 
 const FORMATS = ['.svg', '.png', '.jpg', '.jpeg', '.webp'] as const
 
-/* ── Path helpers ───────────────────────────────────────────────────────────── */
+/* ── Path resolution ────────────────────────────────────────────────────────── */
 
 /*
- * Build all candidate URLs to try in order.
+ * 1. Extract slug from src path (e.g. "react" from ".../react.svg")
+ * 2. Check TECH_LOGO_MANIFEST — if found, return single-entry list (zero 404s)
+ * 3. Fall back to probe cascade: [exact, lowercase, normalized] × [formats]
  *
- * Given src = "/assets/tech/security/OIDC.svg" it generates:
- *   /assets/tech/security/OIDC.svg    ← exact case, first format
- *   /assets/tech/security/OIDC.png
- *   /assets/tech/security/OIDC.jpg
- *   ...
- *   /assets/tech/security/oidc.svg    ← lowercase fallback
- *   /assets/tech/security/oidc.png
- *   ...
- *   /assets/tech/security/oidc.svg    ← normalized (same here, deduped)
- *   ...
- *
- * For mongoDB.png → tries mongoDB.* first, then mongodb.* fallback.
- * For oauth2.0.png → tries oauth2.0.* first, then oauth20.* fallback.
+ * This means known logos resolve instantly on first request.
+ * Unknown future logos auto-probe until found.
  */
 function buildSrcList(src: string): readonly string[] {
-  // Strip the sentinel .svg extension to get the base path
+  // Strip the last extension to get the base path
   const base      = src.replace(/\.[^./]+$/, '')
   const lastSlash = base.lastIndexOf('/')
-  const dir       = base.slice(0, lastSlash + 1)  // "/assets/tech/security/"
-  const file      = base.slice(lastSlash + 1)      // "OIDC" | "oauth2.0" | "mongoDB"
+  const dir       = base.slice(0, lastSlash + 1)   // "/assets/tech/frontend/"
+  const slug      = base.slice(lastSlash + 1)       // "react" | "mongoDB" | "OIDC"
 
-  const fileLower = file.toLowerCase()
-  const fileNorm  = fileLower.replace(/[^a-z0-9]/g, '')  // remove dots, spaces, hyphens
+  // Manifest fast-path — exact slug match first, then lowercase
+  const direct = TECH_LOGO_MANIFEST[slug] ?? TECH_LOGO_MANIFEST[slug.toLowerCase()]
+  if (direct) return [direct]
 
-  // Dedup while preserving priority: exact → lowercase → normalized
+  // Probe cascade for slugs not yet in the manifest
+  const slugLower = slug.toLowerCase()
+  const slugNorm  = slugLower.replace(/[^a-z0-9]/g, '')
+
   const seen  = new Set<string>()
   const names: string[] = []
-  for (const n of [file, fileLower, fileNorm]) {
+  for (const n of [slug, slugLower, slugNorm]) {
     if (n && !seen.has(n)) { seen.add(n); names.push(n) }
   }
 
@@ -64,6 +60,9 @@ function initials(name: string) {
 
 /* ── Dark-mode filter (chroma-based) ───────────────────────────────────────── */
 
+// Portfolio accent used for all icon hover glows — unified premium feel
+const ACCENT = '#FF6B00'
+
 function chromaOf(hex: string): number {
   const h = hex.replace('#', '').padStart(6, '0')
   const r = parseInt(h.slice(0, 2), 16)
@@ -76,36 +75,37 @@ function buildFilters(glow: string): { def: string; hov: string } {
   const hex = glow.startsWith('#') ? glow : `#${glow}`
 
   if (chromaOf(hex) < 30) {
-    // Monochrome brand (Next.js, Shadcn, Kafka…) → lift dark logo to soft gray
+    // Monochrome brand (Next.js, Shadcn, Kafka…) → lift to soft gray, hover → white + orange glow
     return {
       def: 'brightness(0) invert(0.82)',
-      hov: `brightness(0) invert(1) drop-shadow(0 0 5px rgba(240,240,240,0.28))`,
+      hov: `brightness(0) invert(1) drop-shadow(0 0 6px ${ACCENT}70)`,
     }
   }
 
+  // Colored brand → subtle boost + unified orange accent glow on hover
   return {
     def: 'brightness(0.95)',
-    hov: `brightness(1.12) saturate(1.18) drop-shadow(0 0 5px ${hex}55)`,
+    hov: `brightness(1.1) saturate(1.15) drop-shadow(0 0 5px ${ACCENT}55)`,
   }
 }
 
 /* ── TechIcon ───────────────────────────────────────────────────────────────── */
 
 export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps) {
-  const srcList      = useMemo(() => buildSrcList(src), [src])
+  const srcList       = useMemo(() => buildSrcList(src), [src])
   const [idx, setIdx] = useState(0)
-  const loggedRef    = useRef(false)
+  const loggedRef     = useRef(false)
 
   const exhausted = idx >= srcList.length
 
-  // Dev-only: log when all formats are tried and we fall back to initials
+  // Dev-only: log when all candidates fail → initials fallback
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return
     if (exhausted && !loggedRef.current) {
       loggedRef.current = true
-      console.debug(`✕ [tech] ${name}  →  initials fallback`)
+      console.debug(`✕ [tech] ${name}  →  initials fallback  (src: ${src})`)
     }
-  }, [exhausted, name])
+  }, [exhausted, name, src])
 
   if (exhausted) {
     return (
@@ -144,7 +144,7 @@ export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps)
       style={{
         width:      size,
         height:     size,
-        objectFit: 'contain',
+        objectFit:  'contain',
         flexShrink: 0,
         filter:     def,
         transition: 'filter 0.22s ease, transform 0.22s ease',
@@ -153,7 +153,7 @@ export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps)
         if (process.env.NODE_ENV !== 'development') return
         idx === 0
           ? console.debug(`✓ [tech] ${name}`)
-          : console.debug(`⚠ [tech] ${name}  ←  ${currentSrc}`)
+          : console.debug(`⚠ [tech] ${name}  ←  fallback: ${currentSrc}`)
       }}
       onError={() => setIdx((i) => i + 1)}
       onMouseEnter={(e) => {
