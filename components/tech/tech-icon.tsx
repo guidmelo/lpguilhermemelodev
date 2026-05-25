@@ -1,31 +1,69 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 
 interface TechIconProps {
-  src:   string
+  src:   string   // icon path from TechItem — extension is stripped internally
   name:  string
   size?: number
   glow?: string
 }
 
-const FORMATS = ['.svg', '.png', '.webp'] as const
+/* ── Format priority ────────────────────────────────────────────────────────── */
 
-function basePath(src: string) {
-  return src.replace(/\.[^./]+$/, '')
+const FORMATS = ['.svg', '.png', '.jpg', '.jpeg', '.webp'] as const
+
+/* ── Path helpers ───────────────────────────────────────────────────────────── */
+
+/*
+ * Build all candidate URLs to try in order.
+ *
+ * Given src = "/assets/tech/security/OIDC.svg" it generates:
+ *   /assets/tech/security/OIDC.svg    ← exact case, first format
+ *   /assets/tech/security/OIDC.png
+ *   /assets/tech/security/OIDC.jpg
+ *   ...
+ *   /assets/tech/security/oidc.svg    ← lowercase fallback
+ *   /assets/tech/security/oidc.png
+ *   ...
+ *   /assets/tech/security/oidc.svg    ← normalized (same here, deduped)
+ *   ...
+ *
+ * For mongoDB.png → tries mongoDB.* first, then mongodb.* fallback.
+ * For oauth2.0.png → tries oauth2.0.* first, then oauth20.* fallback.
+ */
+function buildSrcList(src: string): readonly string[] {
+  // Strip the sentinel .svg extension to get the base path
+  const base      = src.replace(/\.[^./]+$/, '')
+  const lastSlash = base.lastIndexOf('/')
+  const dir       = base.slice(0, lastSlash + 1)  // "/assets/tech/security/"
+  const file      = base.slice(lastSlash + 1)      // "OIDC" | "oauth2.0" | "mongoDB"
+
+  const fileLower = file.toLowerCase()
+  const fileNorm  = fileLower.replace(/[^a-z0-9]/g, '')  // remove dots, spaces, hyphens
+
+  // Dedup while preserving priority: exact → lowercase → normalized
+  const seen  = new Set<string>()
+  const names: string[] = []
+  for (const n of [file, fileLower, fileNorm]) {
+    if (n && !seen.has(n)) { seen.add(n); names.push(n) }
+  }
+
+  return names.flatMap((n) => FORMATS.map((ext) => dir + n + ext))
 }
 
 function initials(name: string) {
-  return name.split(/[\s./]/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+  return name
+    .split(/[\s./]/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
 }
 
-/*
- * Chroma of the brand's glow color.
- * Low chroma (<30): monochrome brand — Next.js, Shadcn, Kafka, LangChain, etc.
- *   → Logo is dark/black on transparent; needs inversion to be visible on dark bg.
- * High chroma: colored brand — React, TypeScript, Docker, etc.
- *   → Logo already carries its own color; no inversion needed.
- */
+/* ── Dark-mode filter (chroma-based) ───────────────────────────────────────── */
+
 function chromaOf(hex: string): number {
   const h = hex.replace('#', '').padStart(6, '0')
   const r = parseInt(h.slice(0, 2), 16)
@@ -34,15 +72,11 @@ function chromaOf(hex: string): number {
   return Math.max(r, g, b) - Math.min(r, g, b)
 }
 
-/*
- * Default: monochrome logos → brightness(0) collapses to black, invert(0.82)
- * lifts to #D1D1D1 — a consistent soft gray regardless of input.
- * Colored logos → very subtle brightness reduction for visual parity.
- */
 function buildFilters(glow: string): { def: string; hov: string } {
   const hex = glow.startsWith('#') ? glow : `#${glow}`
 
   if (chromaOf(hex) < 30) {
+    // Monochrome brand (Next.js, Shadcn, Kafka…) → lift dark logo to soft gray
     return {
       def: 'brightness(0) invert(0.82)',
       hov: `brightness(0) invert(1) drop-shadow(0 0 5px rgba(240,240,240,0.28))`,
@@ -55,10 +89,25 @@ function buildFilters(glow: string): { def: string; hov: string } {
   }
 }
 
-export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps) {
-  const [fmtIndex, setFmtIndex] = useState(0)
+/* ── TechIcon ───────────────────────────────────────────────────────────────── */
 
-  if (fmtIndex >= FORMATS.length) {
+export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps) {
+  const srcList      = useMemo(() => buildSrcList(src), [src])
+  const [idx, setIdx] = useState(0)
+  const loggedRef    = useRef(false)
+
+  const exhausted = idx >= srcList.length
+
+  // Dev-only: log when all formats are tried and we fall back to initials
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+    if (exhausted && !loggedRef.current) {
+      loggedRef.current = true
+      console.debug(`✕ [tech] ${name}  →  initials fallback`)
+    }
+  }, [exhausted, name])
+
+  if (exhausted) {
     return (
       <span
         aria-hidden
@@ -82,10 +131,12 @@ export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps)
   }
 
   const { def, hov } = buildFilters(glow)
+  const currentSrc   = srcList[idx] as string
 
   return (
     <img
-      src={basePath(src) + FORMATS[fmtIndex]}
+      key={currentSrc}
+      src={currentSrc}
       alt=""
       width={size}
       height={size}
@@ -98,7 +149,13 @@ export function TechIcon({ src, name, size = 14, glow = '#888' }: TechIconProps)
         filter:     def,
         transition: 'filter 0.22s ease, transform 0.22s ease',
       }}
-      onError={() => setFmtIndex((i) => i + 1)}
+      onLoad={() => {
+        if (process.env.NODE_ENV !== 'development') return
+        idx === 0
+          ? console.debug(`✓ [tech] ${name}`)
+          : console.debug(`⚠ [tech] ${name}  ←  ${currentSrc}`)
+      }}
+      onError={() => setIdx((i) => i + 1)}
       onMouseEnter={(e) => {
         e.currentTarget.style.filter    = hov
         e.currentTarget.style.transform = 'scale(1.14)'
