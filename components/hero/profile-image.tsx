@@ -17,11 +17,10 @@
  */
 
 import { memo } from 'react'
-import Image from 'next/image'
 import { motion, useTransform, useSpring } from 'framer-motion'
 import { useMouse } from '@/hooks/use-mouse'
 
-const PHOTO = '/assets/images/profile/guilherme-melo-main.png'
+const PHOTO = '/assets/images/profile/guilherme-melo-main.svg'
 
 /* ── HUD corner brackets ────────────────────────────────────────────────── */
 
@@ -158,23 +157,20 @@ export const ProfileImage = memo(function ProfileImage() {
           }}
         >
           <div className="relative w-full h-full">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={PHOTO}
               alt="Guilherme Melo — Engenheiro e Fundador da Software House"
-              fill
-              priority
               draggable={false}
               style={{
+                position:       'absolute',
+                inset:          0,
+                width:          '100%',
+                height:         '100%',
                 objectFit:      'contain',
                 objectPosition: 'bottom center',
-                /*
-                 * Cinema grade — keeps skin tones accurate:
-                 * contrast(1.04)  → +4% depth, shadow crunch
-                 * brightness(0.96) → slight underexposure = cinematic
-                 * saturate(0.92)  → slight desaturation = premium feel
-                 */
-                filter:     'contrast(1.04) brightness(0.96) saturate(0.92)',
-                userSelect: 'none',
+                filter:         'contrast(1.04) brightness(0.96) saturate(0.92)',
+                userSelect:     'none',
               }}
             />
 
