@@ -21,12 +21,12 @@ const SUBHEADLINE =
   'Desenvolvimento web, SaaS, tráfego pago e sistemas inteligentes para empresas que desejam crescer com estruturas digitais modernas.'
 
 const SERVICES = [
-  { label: 'Sites modernos',       icon: Globe    },
-  { label: 'SaaS',                 icon: Layers   },
-  { label: 'Tráfego pago',         icon: BarChart3 },
-  { label: 'Automações',           icon: Zap      },
+  { label: 'Sites modernos',        icon: Globe    },
+  { label: 'SaaS',                  icon: Layers   },
+  { label: 'Tráfego pago',          icon: BarChart3 },
+  { label: 'Automações',            icon: Zap      },
   { label: 'Sistemas inteligentes', icon: Cpu      },
-  { label: 'Estrutura digital',    icon: Network  },
+  { label: 'Estrutura digital',     icon: Network  },
 ]
 
 /* ── Entrance timing helpers ─────────────────────────────────────────────── */
@@ -36,15 +36,15 @@ const fadeUp = (delay: number) => ({
   transition: { duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] as const },
 })
 
-/* ── GlowBadge (top label) ───────────────────────────────────────────────── */
+/* ── GlowBadge ───────────────────────────────────────────────────────────── */
 const GlowBadge = memo(function GlowBadge() {
   return (
     <motion.div {...fadeUp(0.1)} className="inline-flex items-center">
       <div
         className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5"
         style={{
-          background:  'rgba(255,107,0,0.06)',
-          border:      '1px solid rgba(255,107,0,0.2)',
+          background:     'rgba(255,107,0,0.06)',
+          border:         '1px solid rgba(255,107,0,0.2)',
           backdropFilter: 'blur(8px)',
         }}
       >
@@ -101,15 +101,15 @@ const ServiceBadges = memo(function ServiceBadges() {
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement
-              el.style.borderColor    = 'rgba(255,107,0,0.25)'
-              el.style.color          = '#c8c8c8'
-              el.style.background     = 'rgba(255,107,0,0.04)'
+              el.style.borderColor = 'rgba(255,107,0,0.25)'
+              el.style.color       = '#c8c8c8'
+              el.style.background  = 'rgba(255,107,0,0.04)'
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLElement
-              el.style.borderColor    = 'rgba(255,255,255,0.07)'
-              el.style.color          = '#525252'
-              el.style.background     = 'rgba(255,255,255,0.02)'
+              el.style.borderColor = 'rgba(255,255,255,0.07)'
+              el.style.color       = '#525252'
+              el.style.background  = 'rgba(255,255,255,0.02)'
             }}
           >
             <Icon size={11} strokeWidth={1.5} aria-hidden />
@@ -124,42 +124,22 @@ const ServiceBadges = memo(function ServiceBadges() {
 /* ── Stats strip ─────────────────────────────────────────────────────────── */
 const StatsStrip = memo(function StatsStrip() {
   const stats = [
-    { value: '47+',    label: 'Projetos'   },
+    { value: '47+',    label: 'Projetos'    },
     { value: '4 anos', label: 'Experiência' },
-    { value: '100%',   label: 'Satisfação' },
+    { value: '100%',   label: 'Satisfação'  },
   ]
-
   return (
     <motion.div
       {...fadeUp(0.82)}
       className="flex gap-8 pt-6"
-      style={{
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-      }}
+      style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
     >
       {stats.map(({ value, label }) => (
         <div key={label}>
-          <p
-            style={{
-              fontFamily:    "'Clash Display', sans-serif",
-              fontSize:      '22px',
-              fontWeight:    700,
-              color:         '#F3F3F3',
-              letterSpacing: '-0.025em',
-              lineHeight:    1.1,
-            }}
-          >
+          <p style={{ fontFamily: "'Clash Display', sans-serif", fontSize: '22px', fontWeight: 700, color: '#F3F3F3', letterSpacing: '-0.025em', lineHeight: 1.1 }}>
             {value}
           </p>
-          <p
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize:   '9px',
-              color:      '#3a3a3a',
-              marginTop:  '3px',
-              letterSpacing: '0.06em',
-            }}
-          >
+          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#3a3a3a', marginTop: '3px', letterSpacing: '0.06em' }}>
             {label.toUpperCase()}
           </p>
         </div>
@@ -175,10 +155,10 @@ export const HeroSection = memo(function HeroSection() {
       className="relative overflow-hidden"
       style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
     >
-      {/* ── Layer 0: Live tech background ──────────────────────────────── */}
+      {/* ── z-index 0: Live code ambient ────────────────────────────────── */}
       <AnimatedCodeBg />
 
-      {/* ── Layer 1: Section ambient lighting ──────────────────────────── */}
+      {/* ── z-index 1: Section ambient lighting ─────────────────────────── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -187,74 +167,61 @@ export const HeroSection = memo(function HeroSection() {
           background: [
             'radial-gradient(ellipse 60% 50% at 100% 40%, rgba(255,107,0,0.055) 0%, transparent 65%)',
             'radial-gradient(ellipse 40% 60% at 0% 60%,  rgba(255,107,0,0.03)  0%, transparent 65%)',
-            'radial-gradient(ellipse 80% 40% at 50% 100%, rgba(10,10,10,0.95) 0%, transparent 50%)',
+            'radial-gradient(ellipse 80% 40% at 50% 100%, rgba(10,10,10,0.95)  0%, transparent 50%)',
           ].join(', '),
         }}
       />
 
-      {/* ── Layer 2: Content ────────────────────────────────────────────── */}
+      {/* ── z-index 10: Photo layer ──────────────────────────────────────── */}
+      {/*   Mobile  → in-flow, above text, h-[420px] capped                  */}
+      {/*   Desktop → absolute right half, full section height, behind text  */}
+      <motion.div
+        className="
+          relative w-full h-[420px] overflow-hidden
+          lg:absolute lg:inset-y-0 lg:right-0 lg:w-[50%] lg:h-auto lg:overflow-visible
+        "
+        style={{ zIndex: 10, pointerEvents: 'none' }}
+        initial={{ opacity: 0, x: 40, filter: 'blur(12px)' }}
+        animate={{ opacity: 1, x: 0,  filter: 'blur(0px)'  }}
+        transition={{ duration: 1.0, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <HeroImage />
+      </motion.div>
+
+      {/* ── z-index 30: Text content — always in front ──────────────────── */}
       <Container
         className="relative"
-        style={{ zIndex: 10, paddingTop: '7rem', paddingBottom: '6rem' } as React.CSSProperties}
+        style={{ zIndex: 30, paddingTop: '7rem', paddingBottom: '6rem' } as React.CSSProperties}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px] gap-12 xl:gap-16 items-center">
+        <div className="flex flex-col gap-6 lg:max-w-[580px]">
 
-          {/* ── Left column: Text ─────────────────────────────────────── */}
-          <div className="flex flex-col gap-6 order-2 lg:order-1">
+          <GlowBadge />
 
-            {/* Top badge */}
-            <GlowBadge />
+          <HeadlineReveal
+            text={HEADLINE}
+            accentWords={ACCENT_WORDS}
+            className="text-display-xl font-display text-white"
+          />
 
-            {/* Headline — word cascade */}
-            <HeadlineReveal
-              text={HEADLINE}
-              accentWords={ACCENT_WORDS}
-              className="text-display-xl font-display text-white"
-            />
+          <motion.p {...fadeUp(0.52)} className="text-body-lg max-w-[520px]">
+            {SUBHEADLINE}
+          </motion.p>
 
-            {/* Subheadline */}
-            <motion.p
-              {...fadeUp(0.52)}
-              className="text-body-lg max-w-[520px]"
-            >
-              {SUBHEADLINE}
-            </motion.p>
-
-            {/* CTA buttons */}
-            <motion.div {...fadeUp(0.66)} className="flex flex-wrap items-center gap-3">
-              <MagneticWrapper strength={0.22}>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  rightIcon={<ArrowRight size={15} />}
-                >
-                  Solicitar diagnóstico estratégico
-                </Button>
-              </MagneticWrapper>
-              <MagneticWrapper strength={0.18}>
-                <Button variant="secondary" size="lg">
-                  Ver portfólio
-                </Button>
-              </MagneticWrapper>
-            </motion.div>
-
-            {/* Service badges */}
-            <ServiceBadges />
-
-            {/* Stats */}
-            <StatsStrip />
-          </div>
-
-          {/* ── Right column: Figure — no box, bleeds into hero ambient ── */}
-          <motion.div
-            className="order-1 lg:order-2"
-            style={{ overflow: 'visible' }}
-            initial={{ opacity: 0, x: 30, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, x: 0,  filter: 'blur(0px)' }}
-            transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <HeroImage />
+          <motion.div {...fadeUp(0.66)} className="flex flex-wrap items-center gap-3">
+            <MagneticWrapper strength={0.22}>
+              <Button variant="primary" size="lg" rightIcon={<ArrowRight size={15} />}>
+                Solicitar diagnóstico estratégico
+              </Button>
+            </MagneticWrapper>
+            <MagneticWrapper strength={0.18}>
+              <Button variant="secondary" size="lg">
+                Ver portfólio
+              </Button>
+            </MagneticWrapper>
           </motion.div>
+
+          <ServiceBadges />
+          <StatsStrip />
         </div>
       </Container>
 
@@ -269,11 +236,8 @@ export const HeroSection = memo(function HeroSection() {
         }}
       />
 
-      {/* ── Separator line at the very bottom ─────────────────────────── */}
-      <div
-        className="absolute bottom-0 inset-x-0"
-        style={{ zIndex: 6 }}
-      >
+      {/* ── Separator line ───────────────────────────────────────────────── */}
+      <div className="absolute bottom-0 inset-x-0" style={{ zIndex: 6 }}>
         <GradientLine orientation="horizontal" accentSide="center" animate />
       </div>
 

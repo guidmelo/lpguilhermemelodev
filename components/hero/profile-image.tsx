@@ -38,29 +38,36 @@ export const ProfileImage = memo(function ProfileImage() {
   const glowY   = useTransform(moveY, (v) => v * 0.6)
 
   return (
-    /* Root: fills right column, no bounding box, overflow visible for badges */
+    /*
+     * Root fills 100% of its container.
+     * Mobile: container is h-[420px] overflow-hidden → figure cropped at bottom.
+     * Desktop: container is absolute inset-y-0 right-0 → figure fills section height.
+     */
     <div
       className="relative select-none"
       style={{
-        display:        'flex',
+        width:   '100%',
+        height:  '100%',
+        display: 'flex',
         justifyContent: 'flex-end',
         alignItems:     'flex-end',
-        overflow:       'visible',
-        height:         'clamp(520px, 80vh, 820px)',
-        width:          '100%',
+        overflow: 'visible',
       }}
     >
-      {/* ── Ambient orange glow — site-generated, behind figure ─────────── */}
+      {/* ── Ambient glow — bleeds left into text area for depth ──────────── */}
       <motion.div
         aria-hidden
-        className="absolute inset-0 pointer-events-none"
+        className="pointer-events-none"
         style={{
+          position: 'absolute',
+          /* Extend glow left beyond the photo container boundary */
+          top: 0, right: 0, bottom: 0, left: '-35%',
           x:          glowX,
           y:          glowY,
           background: [
-            'radial-gradient(ellipse 90% 90% at 65% 85%, rgba(255,107,0,0.26) 0%, rgba(255,107,0,0.10) 45%, transparent 72%)',
-            'radial-gradient(ellipse 50% 55% at 58% 25%, rgba(255,140,60,0.09) 0%, transparent 65%)',
-            'radial-gradient(ellipse 40% 30% at 30% 70%,  rgba(255,107,0,0.04) 0%, transparent 60%)',
+            'radial-gradient(ellipse 85% 90% at 70% 80%, rgba(255,107,0,0.24) 0%, rgba(255,107,0,0.09) 48%, transparent 72%)',
+            'radial-gradient(ellipse 55% 55% at 62% 22%, rgba(255,140,60,0.09) 0%, transparent 65%)',
+            'radial-gradient(ellipse 40% 35% at 20% 65%,  rgba(255,107,0,0.03) 0%, transparent 60%)',
           ].join(', '),
           filter: 'blur(55px)',
           zIndex:  0,
@@ -69,7 +76,7 @@ export const ProfileImage = memo(function ProfileImage() {
         transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* ── HUD grid — site-generated, barely visible ────────────────────── */}
+      {/* ── HUD grid — masked to figure area ────────────────────────────── */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
@@ -80,36 +87,36 @@ export const ProfileImage = memo(function ProfileImage() {
             'linear-gradient(90deg, rgba(255,107,0,0.022) 1px, transparent 1px)',
           ].join(', '),
           backgroundSize:     '42px 42px',
-          maskImage:          'radial-gradient(ellipse 78% 88% at 65% 78%, black 0%, transparent 82%)',
-          WebkitMaskImage:    'radial-gradient(ellipse 78% 88% at 65% 78%, black 0%, transparent 82%)',
+          maskImage:          'radial-gradient(ellipse 80% 88% at 68% 78%, black 0%, transparent 82%)',
+          WebkitMaskImage:    'radial-gradient(ellipse 80% 88% at 68% 78%, black 0%, transparent 82%)',
         }}
       />
 
-      {/* ── Scanlines — site-generated, cinematic texture ────────────────── */}
+      {/* ── Scanlines ────────────────────────────────────────────────────── */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
           zIndex:          1,
           backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,107,0,0.009) 3px, rgba(255,107,0,0.009) 4px)',
-          maskImage:       'radial-gradient(ellipse 58% 72% at 65% 72%, black 0%, transparent 86%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 58% 72% at 65% 72%, black 0%, transparent 86%)',
+          maskImage:       'radial-gradient(ellipse 60% 72% at 68% 72%, black 0%, transparent 86%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 72% at 68% 72%, black 0%, transparent 86%)',
         }}
       />
 
-      {/* ── Figure: float outer ──────────────────────────────────────────── */}
+      {/* ── Figure: float outer ─────────────────────────────────────────── */}
       <motion.div
         style={{
           position:     'relative',
           zIndex:       2,
-          marginRight:  '-4%',
-          marginBottom: '-1.5rem',
+          marginRight:  '-3%',
+          marginBottom: '-1rem',
           flexShrink:   0,
         }}
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* ── Figure: parallax inner ───────────────────────────────────── */}
+        {/* ── Figure: parallax inner ──────────────────────────────────── */}
         <motion.div
           style={{
             x:              moveX,
@@ -120,17 +127,19 @@ export const ProfileImage = memo(function ProfileImage() {
             transformStyle: 'preserve-3d',
           }}
         >
-          {/* Inline wrapper — badges position relative to this */}
+          {/* Inline block so badges can anchor to the figure's real bounds */}
           <div style={{ position: 'relative', display: 'inline-block' }}>
 
-            {/* ── Transparent SVG figure ─────────────────────────────── */}
+            {/* ── Transparent SVG figure — no baked background ────────── */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={PHOTO}
               alt="Guilherme Melo — Engenheiro e Fundador da Software House"
               draggable={false}
               style={{
-                height:     'clamp(500px, 76vh, 760px)',
+                /* Desktop: 78vh fills most of the full-section container.
+                   Mobile:  max 420px is already capped by the parent.       */
+                height:     'clamp(400px, 78vh, 800px)',
                 width:      'auto',
                 maxWidth:   'none',
                 display:    'block',
@@ -139,7 +148,7 @@ export const ProfileImage = memo(function ProfileImage() {
               }}
             />
 
-            {/* ── Bottom vignette — figure dissolves into page ─────── */}
+            {/* ── Bottom vignette — figure fades into page bg ─────────── */}
             <div
               aria-hidden
               style={{
@@ -152,9 +161,9 @@ export const ProfileImage = memo(function ProfileImage() {
               }}
             />
 
-            {/* ── Badge: available ───────────────────────────────────── */}
+            {/* ── Badge: available ─────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '10%', right: '-8%', zIndex: 6 }}
+              style={{ position: 'absolute', top: '10%', right: '-8%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.2, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -173,9 +182,9 @@ export const ProfileImage = memo(function ProfileImage() {
               </GlassCard>
             </motion.div>
 
-            {/* ── Badge: metric ──────────────────────────────────────── */}
+            {/* ── Badge: projects metric ───────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', bottom: '28%', left: '-10%', zIndex: 6 }}
+              style={{ position: 'absolute', bottom: '28%', left: '-10%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: -18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.5, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -192,9 +201,9 @@ export const ProfileImage = memo(function ProfileImage() {
               </motion.div>
             </motion.div>
 
-            {/* ── Badge: tech stack ──────────────────────────────────── */}
+            {/* ── Badge: tech stack ────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '40%', right: '-12%', zIndex: 6 }}
+              style={{ position: 'absolute', top: '40%', right: '-12%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 14 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.85, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
