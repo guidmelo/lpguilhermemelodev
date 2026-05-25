@@ -2,8 +2,10 @@
 
 /*
  * SVG is landscape (viewBox 0 0 1101 803, ratio ≈ 1.37:1).
- * Using object-fit:cover in a portrait container to crop to person.
- * Centering vertically in section aligns head with headline.
+ * object-fit:cover breaks complex SVG rendering (embedded PNG + filters).
+ * Solution: render at width:100% / height:auto (full column width, natural ratio).
+ * The landscape image fills the right column at ~525px height.
+ * align-items:center on root vertically centers it alongside the headline.
  */
 
 import { memo } from 'react'
@@ -35,7 +37,7 @@ export const ProfileImage = memo(function ProfileImage() {
   const rawX    = useTransform(xNorm, [0, 1], [-10,  10])
   const rawY    = useTransform(yNorm, [0, 1], [ -6,   6])
   const rawTX   = useTransform(xNorm, [0, 1], [  2,  -2])
-  const rawTY   = useTransform(yNorm, [0, 1], [ -1.5, 1.5])
+  const rawTY   = useTransform(yNorm, [0, 1], [-1.5, 1.5])
   const moveX   = useSpring(rawX,  { stiffness: 52, damping: 22 })
   const moveY   = useSpring(rawY,  { stiffness: 52, damping: 22 })
   const rotateY = useSpring(rawTX, { stiffness: 48, damping: 22 })
@@ -44,12 +46,6 @@ export const ProfileImage = memo(function ProfileImage() {
   const glowY   = useTransform(moveY, (v) => v * 0.6)
 
   return (
-    /*
-     * Root fills the container.
-     * Mobile:  h-[420px] container → root is 420px, portrait crop fits inside.
-     * Desktop: absolute inset-y-0 container → root is section height (100dvh).
-     * align-items:center vertically centers the portrait frame alongside the headline.
-     */
     <div
       className="relative select-none"
       style={{
@@ -57,18 +53,18 @@ export const ProfileImage = memo(function ProfileImage() {
         height:         '100%',
         display:        'flex',
         justifyContent: 'flex-end',
-        alignItems:     'center',
+        alignItems:     'center',   /* vertical center → head aligns with headline */
         overflow:       'visible',
       }}
     >
-      {/* ── Ambient glow — bleeds left into text area for depth ──────────── */}
+      {/* ── Ambient glow — bleeds left for depth ────────────────────────── */}
       <motion.div
         aria-hidden
         className="pointer-events-none"
         style={{
           position: 'absolute',
           top: 0, right: 0, bottom: 0,
-          left: '-40%',   /* deliberately bleeds left to light the text column */
+          left: '-40%',
           x:          glowX,
           y:          glowY,
           background: [
@@ -82,7 +78,7 @@ export const ProfileImage = memo(function ProfileImage() {
         transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* ── HUD grid ────────────────────────────────────────────────────── */}
+      {/* ── HUD grid ─────────────────────────────────────────────────────── */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
@@ -112,7 +108,7 @@ export const ProfileImage = memo(function ProfileImage() {
 
       {/* ── Figure: float outer ─────────────────────────────────────────── */}
       <motion.div
-        style={{ position: 'relative', zIndex: 2, flexShrink: 0 }}
+        style={{ position: 'relative', zIndex: 2, width: '100%', flexShrink: 0 }}
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -125,68 +121,43 @@ export const ProfileImage = memo(function ProfileImage() {
             rotateY,
             perspective:    900,
             transformStyle: 'preserve-3d',
+            width:          '100%',
           }}
         >
-          {/*
-           * Outer wrapper — defines portrait dimensions; overflow:visible so badges pop out.
-           * SVG is landscape (1.37:1). object-fit:cover in a portrait container
-           * crops it to show the person, while object-position:center shifts to subject.
-           *
-           * Width: min(100%, 460px) — fills mobile column, capped on desktop.
-           * Height: clamp(500px, 84vh, 840px) — dominant on desktop, capped.
-           */}
-          <div
-            style={{
-              position: 'relative',
-              overflow: 'visible',
-              width:    'min(100%, 460px)',
-              height:   'clamp(500px, 84vh, 840px)',
-            }}
-          >
-            {/* Inner clip — isolates overflow:hidden to the image only */}
-            <div
-              aria-hidden={false}
+          {/* Figure outer — position anchor for badges + vignette */}
+          <div style={{ position: 'relative', width: '100%' }}>
+
+            {/* ── SVG figure — width fills column, height natural ──────── */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={PHOTO}
+              alt="Guilherme Melo — Engenheiro e Fundador da Software House"
+              draggable={false}
               style={{
-                position: 'absolute',
-                inset:    0,
-                overflow: 'hidden',
+                width:      '100%',
+                height:     'auto',
+                display:    'block',
+                filter:     'contrast(1.04) brightness(0.97) saturate(0.92)',
+                userSelect: 'none',
               }}
-            >
-              {/* ── Transparent SVG figure — object-fit crops landscape ── */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={PHOTO}
-                alt="Guilherme Melo — Engenheiro e Fundador da Software House"
-                draggable={false}
-                style={{
-                  width:          '100%',
-                  height:         '100%',
-                  objectFit:      'cover',
-                  /* center horizontally; 10% from top shows head/torso */
-                  objectPosition: 'center 10%',
-                  display:        'block',
-                  filter:         'contrast(1.04) brightness(0.97) saturate(0.92)',
-                  userSelect:     'none',
-                }}
-              />
+            />
 
-              {/* ── Bottom vignette ──────────────────────────────────── */}
-              <div
-                aria-hidden
-                style={{
-                  position:      'absolute',
-                  inset:         'auto 0 0 0',
-                  height:        '35%',
-                  background:    'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 50%, transparent 100%)',
-                  zIndex:        1,
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
+            {/* ── Bottom vignette — fades figure into page ─────────────── */}
+            <div
+              aria-hidden
+              style={{
+                position:      'absolute',
+                inset:         'auto 0 0 0',
+                height:        '32%',
+                background:    'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 48%, transparent 100%)',
+                zIndex:        1,
+                pointerEvents: 'none',
+              }}
+            />
 
-            {/* ── Badge: available ─────────────────────────────────────── */}
+            {/* ── Badge: available ───────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '8%', right: '-6%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', top: '8%', right: '0%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.2, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -205,9 +176,9 @@ export const ProfileImage = memo(function ProfileImage() {
               </GlassCard>
             </motion.div>
 
-            {/* ── Badge: projects metric ───────────────────────────────── */}
+            {/* ── Badge: projects ─────────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', bottom: '30%', left: '-8%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', bottom: '30%', left: '2%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: -18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.5, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -224,9 +195,9 @@ export const ProfileImage = memo(function ProfileImage() {
               </motion.div>
             </motion.div>
 
-            {/* ── Badge: tech stack ────────────────────────────────────── */}
+            {/* ── Badge: tech stack ────────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '42%', right: '-10%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', top: '40%', right: '2%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 14 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.85, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
