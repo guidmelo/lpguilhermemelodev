@@ -1,5 +1,11 @@
 'use client'
 
+/*
+ * SVG is landscape (viewBox 0 0 1101 803, ratio ≈ 1.37:1).
+ * Using object-fit:cover in a portrait container to crop to person.
+ * Centering vertically in section aligns head with headline.
+ */
+
 import { memo } from 'react'
 import { motion, useTransform, useSpring } from 'framer-motion'
 import { useMouse } from '@/hooks/use-mouse'
@@ -26,10 +32,10 @@ function GlassCard({ children, style }: { children: React.ReactNode; style?: Rea
 export const ProfileImage = memo(function ProfileImage() {
   const { xNorm, yNorm } = useMouse()
 
-  const rawX    = useTransform(xNorm, [0, 1], [-12,  12])
-  const rawY    = useTransform(yNorm, [0, 1], [ -7,   7])
-  const rawTX   = useTransform(xNorm, [0, 1], [  3,  -3])
-  const rawTY   = useTransform(yNorm, [0, 1], [ -2,   2])
+  const rawX    = useTransform(xNorm, [0, 1], [-10,  10])
+  const rawY    = useTransform(yNorm, [0, 1], [ -6,   6])
+  const rawTX   = useTransform(xNorm, [0, 1], [  2,  -2])
+  const rawTY   = useTransform(yNorm, [0, 1], [ -1.5, 1.5])
   const moveX   = useSpring(rawX,  { stiffness: 52, damping: 22 })
   const moveY   = useSpring(rawY,  { stiffness: 52, damping: 22 })
   const rotateY = useSpring(rawTX, { stiffness: 48, damping: 22 })
@@ -39,19 +45,20 @@ export const ProfileImage = memo(function ProfileImage() {
 
   return (
     /*
-     * Root fills 100% of its container.
-     * Mobile: container is h-[420px] overflow-hidden → figure cropped at bottom.
-     * Desktop: container is absolute inset-y-0 right-0 → figure fills section height.
+     * Root fills the container.
+     * Mobile:  h-[420px] container → root is 420px, portrait crop fits inside.
+     * Desktop: absolute inset-y-0 container → root is section height (100dvh).
+     * align-items:center vertically centers the portrait frame alongside the headline.
      */
     <div
       className="relative select-none"
       style={{
-        width:   '100%',
-        height:  '100%',
-        display: 'flex',
+        width:          '100%',
+        height:         '100%',
+        display:        'flex',
         justifyContent: 'flex-end',
-        alignItems:     'flex-end',
-        overflow: 'visible',
+        alignItems:     'center',
+        overflow:       'visible',
       }}
     >
       {/* ── Ambient glow — bleeds left into text area for depth ──────────── */}
@@ -60,14 +67,13 @@ export const ProfileImage = memo(function ProfileImage() {
         className="pointer-events-none"
         style={{
           position: 'absolute',
-          /* Extend glow left beyond the photo container boundary */
-          top: 0, right: 0, bottom: 0, left: '-35%',
+          top: 0, right: 0, bottom: 0,
+          left: '-40%',   /* deliberately bleeds left to light the text column */
           x:          glowX,
           y:          glowY,
           background: [
-            'radial-gradient(ellipse 85% 90% at 70% 80%, rgba(255,107,0,0.24) 0%, rgba(255,107,0,0.09) 48%, transparent 72%)',
-            'radial-gradient(ellipse 55% 55% at 62% 22%, rgba(255,140,60,0.09) 0%, transparent 65%)',
-            'radial-gradient(ellipse 40% 35% at 20% 65%,  rgba(255,107,0,0.03) 0%, transparent 60%)',
+            'radial-gradient(ellipse 80% 80% at 65% 55%, rgba(255,107,0,0.22) 0%, rgba(255,107,0,0.08) 48%, transparent 72%)',
+            'radial-gradient(ellipse 45% 50% at 58% 20%, rgba(255,140,60,0.09) 0%, transparent 65%)',
           ].join(', '),
           filter: 'blur(55px)',
           zIndex:  0,
@@ -76,7 +82,7 @@ export const ProfileImage = memo(function ProfileImage() {
         transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* ── HUD grid — masked to figure area ────────────────────────────── */}
+      {/* ── HUD grid ────────────────────────────────────────────────────── */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
@@ -87,8 +93,8 @@ export const ProfileImage = memo(function ProfileImage() {
             'linear-gradient(90deg, rgba(255,107,0,0.022) 1px, transparent 1px)',
           ].join(', '),
           backgroundSize:     '42px 42px',
-          maskImage:          'radial-gradient(ellipse 80% 88% at 68% 78%, black 0%, transparent 82%)',
-          WebkitMaskImage:    'radial-gradient(ellipse 80% 88% at 68% 78%, black 0%, transparent 82%)',
+          maskImage:          'radial-gradient(ellipse 80% 88% at 65% 55%, black 0%, transparent 82%)',
+          WebkitMaskImage:    'radial-gradient(ellipse 80% 88% at 65% 55%, black 0%, transparent 82%)',
         }}
       />
 
@@ -99,20 +105,14 @@ export const ProfileImage = memo(function ProfileImage() {
         style={{
           zIndex:          1,
           backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,107,0,0.009) 3px, rgba(255,107,0,0.009) 4px)',
-          maskImage:       'radial-gradient(ellipse 60% 72% at 68% 72%, black 0%, transparent 86%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 72% at 68% 72%, black 0%, transparent 86%)',
+          maskImage:       'radial-gradient(ellipse 60% 68% at 65% 55%, black 0%, transparent 86%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 68% at 65% 55%, black 0%, transparent 86%)',
         }}
       />
 
       {/* ── Figure: float outer ─────────────────────────────────────────── */}
       <motion.div
-        style={{
-          position:     'relative',
-          zIndex:       2,
-          marginRight:  '-3%',
-          marginBottom: '-1rem',
-          flexShrink:   0,
-        }}
+        style={{ position: 'relative', zIndex: 2, flexShrink: 0 }}
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -127,43 +127,66 @@ export const ProfileImage = memo(function ProfileImage() {
             transformStyle: 'preserve-3d',
           }}
         >
-          {/* Inline block so badges can anchor to the figure's real bounds */}
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-
-            {/* ── Transparent SVG figure — no baked background ────────── */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={PHOTO}
-              alt="Guilherme Melo — Engenheiro e Fundador da Software House"
-              draggable={false}
-              style={{
-                /* Desktop: 78vh fills most of the full-section container.
-                   Mobile:  max 420px is already capped by the parent.       */
-                height:     'clamp(400px, 78vh, 800px)',
-                width:      'auto',
-                maxWidth:   'none',
-                display:    'block',
-                filter:     'contrast(1.04) brightness(0.97) saturate(0.92)',
-                userSelect: 'none',
-              }}
-            />
-
-            {/* ── Bottom vignette — figure fades into page bg ─────────── */}
+          {/*
+           * Outer wrapper — defines portrait dimensions; overflow:visible so badges pop out.
+           * SVG is landscape (1.37:1). object-fit:cover in a portrait container
+           * crops it to show the person, while object-position:center shifts to subject.
+           *
+           * Width: min(100%, 460px) — fills mobile column, capped on desktop.
+           * Height: clamp(500px, 84vh, 840px) — dominant on desktop, capped.
+           */}
+          <div
+            style={{
+              position: 'relative',
+              overflow: 'visible',
+              width:    'min(100%, 460px)',
+              height:   'clamp(500px, 84vh, 840px)',
+            }}
+          >
+            {/* Inner clip — isolates overflow:hidden to the image only */}
             <div
-              aria-hidden
+              aria-hidden={false}
               style={{
-                position:      'absolute',
-                inset:         'auto 0 0 0',
-                height:        '30%',
-                background:    'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.65) 45%, transparent 100%)',
-                zIndex:        1,
-                pointerEvents: 'none',
+                position: 'absolute',
+                inset:    0,
+                overflow: 'hidden',
               }}
-            />
+            >
+              {/* ── Transparent SVG figure — object-fit crops landscape ── */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={PHOTO}
+                alt="Guilherme Melo — Engenheiro e Fundador da Software House"
+                draggable={false}
+                style={{
+                  width:          '100%',
+                  height:         '100%',
+                  objectFit:      'cover',
+                  /* center horizontally; 10% from top shows head/torso */
+                  objectPosition: 'center 10%',
+                  display:        'block',
+                  filter:         'contrast(1.04) brightness(0.97) saturate(0.92)',
+                  userSelect:     'none',
+                }}
+              />
+
+              {/* ── Bottom vignette ──────────────────────────────────── */}
+              <div
+                aria-hidden
+                style={{
+                  position:      'absolute',
+                  inset:         'auto 0 0 0',
+                  height:        '35%',
+                  background:    'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 50%, transparent 100%)',
+                  zIndex:        1,
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
 
             {/* ── Badge: available ─────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '10%', right: '-8%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', top: '8%', right: '-6%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.2, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -184,7 +207,7 @@ export const ProfileImage = memo(function ProfileImage() {
 
             {/* ── Badge: projects metric ───────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', bottom: '28%', left: '-10%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', bottom: '30%', left: '-8%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: -18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.5, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -203,7 +226,7 @@ export const ProfileImage = memo(function ProfileImage() {
 
             {/* ── Badge: tech stack ────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '40%', right: '-12%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', top: '42%', right: '-10%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 14 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.85, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
