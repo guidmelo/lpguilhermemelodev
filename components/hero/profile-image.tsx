@@ -1,11 +1,12 @@
 'use client'
 
 /*
- * SVG is landscape (viewBox 0 0 1101 803, ratio ≈ 1.37:1).
- * object-fit:cover breaks complex SVG rendering (embedded PNG + filters).
- * Solution: render at width:100% / height:auto (full column width, natural ratio).
- * The landscape image fills the right column at ~525px height.
- * align-items:center on root vertically centers it alongside the headline.
+ * Root cause of invisible photo: SVG with height:auto needs a parent with
+ * explicit height to resolve. Solution: use a clip container with an explicit
+ * clamp() height, then img height:100% inherits that fixed value.
+ *
+ * Landscape SVG (1101×803 viewBox, ratio ≈ 1.37:1) is cropped to a
+ * portrait-ish viewport via overflow:hidden + centered translateX.
  */
 
 import { memo } from 'react'
@@ -46,6 +47,10 @@ export const ProfileImage = memo(function ProfileImage() {
   const glowY   = useTransform(moveY, (v) => v * 0.6)
 
   return (
+    /*
+     * Root fills parent (photo column: lg:absolute inset-y-0 right-0 w-[50%]).
+     * align-items:center vertically centers the figure alongside the headline.
+     */
     <div
       className="relative select-none"
       style={{
@@ -53,11 +58,11 @@ export const ProfileImage = memo(function ProfileImage() {
         height:         '100%',
         display:        'flex',
         justifyContent: 'flex-end',
-        alignItems:     'center',   /* vertical center → head aligns with headline */
+        alignItems:     'center',
         overflow:       'visible',
       }}
     >
-      {/* ── Ambient glow — bleeds left for depth ────────────────────────── */}
+      {/* ── Ambient glow — bleeds left into text area ───────────────────── */}
       <motion.div
         aria-hidden
         className="pointer-events-none"
@@ -124,40 +129,65 @@ export const ProfileImage = memo(function ProfileImage() {
             width:          '100%',
           }}
         >
-          {/* Figure outer — position anchor for badges + vignette */}
-          <div style={{ position: 'relative', width: '100%' }}>
+          {/* Outer wrapper: overflow:visible so badges can bleed out */}
+          <div style={{ position: 'relative', overflow: 'visible' }}>
 
-            {/* ── SVG figure — width fills column, height natural ──────── */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={PHOTO}
-              alt="Guilherme Melo — Engenheiro e Fundador da Software House"
-              draggable={false}
-              style={{
-                width:      '100%',
-                height:     'auto',
-                display:    'block',
-                filter:     'contrast(1.04) brightness(0.97) saturate(0.92)',
-                userSelect: 'none',
-              }}
-            />
-
-            {/* ── Bottom vignette — fades figure into page ─────────────── */}
+            {/*
+             * Clip container: EXPLICIT height via clamp — this is the fix.
+             * img height:100% inherits this explicit value → SVG renders.
+             * overflow:hidden crops the landscape width to portrait-ish.
+             */}
             <div
-              aria-hidden
               style={{
-                position:      'absolute',
-                inset:         'auto 0 0 0',
-                height:        '32%',
-                background:    'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 48%, transparent 100%)',
-                zIndex:        1,
-                pointerEvents: 'none',
+                position: 'relative',
+                overflow: 'hidden',
+                height:   'clamp(480px, 72vh, 760px)',
+                width:    '100%',
               }}
-            />
+            >
+              {/* ── Transparent SVG — absolutely centered ────────────── */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={PHOTO}
+                alt="Guilherme Melo — Engenheiro e Fundador da Software House"
+                draggable={false}
+                style={{
+                  /*
+                   * height:100% = clip container clamp value → explicit px height.
+                   * SVG renders at this height; width:auto = landscape ratio (~1041px).
+                   * position:absolute + left:50% + translateX(-50%) centers it,
+                   * allowing overflow:hidden to crop both sides symmetrically.
+                   */
+                  position:   'absolute',
+                  top:        0,
+                  left:       '50%',
+                  transform:  'translateX(-50%)',
+                  height:     '100%',
+                  width:      'auto',
+                  maxWidth:   'none',
+                  display:    'block',
+                  filter:     'contrast(1.04) brightness(0.97) saturate(0.92)',
+                  userSelect: 'none',
+                }}
+              />
 
-            {/* ── Badge: available ───────────────────────────────────────── */}
+              {/* ── Bottom vignette ──────────────────────────────────── */}
+              <div
+                aria-hidden
+                style={{
+                  position:      'absolute',
+                  inset:         'auto 0 0 0',
+                  height:        '32%',
+                  background:    'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 48%, transparent 100%)',
+                  zIndex:        1,
+                  pointerEvents: 'none',
+                }}
+              />
+            </div>
+
+            {/* ── Badge: available ─────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '8%', right: '0%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', top: '8%', right: '-2%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.2, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -176,9 +206,9 @@ export const ProfileImage = memo(function ProfileImage() {
               </GlassCard>
             </motion.div>
 
-            {/* ── Badge: projects ─────────────────────────────────────────── */}
+            {/* ── Badge: projects ──────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', bottom: '30%', left: '2%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', bottom: '28%', left: '2%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: -18 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.5, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
@@ -195,9 +225,9 @@ export const ProfileImage = memo(function ProfileImage() {
               </motion.div>
             </motion.div>
 
-            {/* ── Badge: tech stack ────────────────────────────────────────── */}
+            {/* ── Badge: tech stack ────────────────────────────────────── */}
             <motion.div
-              style={{ position: 'absolute', top: '40%', right: '2%', zIndex: 6, pointerEvents: 'auto' }}
+              style={{ position: 'absolute', top: '42%', right: '-2%', zIndex: 6, pointerEvents: 'auto' }}
               initial={{ opacity: 0, x: 14 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.85, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
